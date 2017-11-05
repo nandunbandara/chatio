@@ -1,12 +1,9 @@
 'use strict';
 
 const express = require('express');
-const cors = require('cors');
 
 const app = express();
 const server = require('http').createServer(app);
-
-app.use(cors());
 
 const io = require('socket.io')(server);
 
