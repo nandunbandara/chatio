@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat IO</title>
+
+    <script src="/jquery/dist/jquery.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Chat IO</h1>
+    <div id="future"></div>
+    <form id="connection_form" >
+        <input id="port_input" type="text" placeholder="PORT" style="width: 40px;">
+        <input id="username_input" type="text" placeholder="Username">
+        <input type="submit" value="Connect">
+    </form>
+    <form id="chat_form">
+        <input id="chat_input" type="text">
+        <input type="submit" value="Send">
+        <input type="button" onclick="disconnect()" value="Disconnect">
+    </form>
+
+    <script>
+
+        //get session value for username and port
+        let username = sessionStorage.getItem('username');
+        let port = sessionStorage.getItem('port');
+
+        let socket = null;
+
+        //load chat form upon connecting
+        let showChatForm = ()=>{
+            $('#chat_form').show();
+            $('#connection_form').hide();
+        };
+
+        //hide chat form upon disconnecting
+        let hideChatForm = ()=>{
+          $('#chat_form').hide();
+          $('#connection_form').show();
+        };
+
+        socket = io.connect('http://localhost:'.concat(port+"/"));
+
+
+        //connect to the server
+        let connect = (port, username)=>{
+            sessionStorage.setItem('username', username);
+            sessionStorage.setItem('port', port);
+            socket = io.connect('http://localhost:'.concat(port+"/"));
+            showChatForm();
+        };
+
+        //disconnect from server
+        let disconnect = ()=>{
+            socket.close();
+            sessionStorage.removeItem('username');
+            hideChatForm();
+        };
+
+        //check if the user is logged in or not
+        let validateSession = ()=>{
+            if(username == null || port == null){
+                console.log('within if');
+                $('#chat_form').hide();
+                $('#connection_form').show();
+            }else{
+                $('#form').show();
+                $('#connection_form').hide();
+//                connect(port, username);
+            }
+        };
+
+        validateSession();
+
+        if(socket != null){
+            socket.on('connect', (data)=>{
+                socket.emit('join', 'Hello World from client!');
+            });
+
+            //on event of a broadcasted message
+            socket.on('broad', (data)=>{
+                $('#future').append(data+"<br/>");
+            });
+        }
+
+        //send message
+        $('#chat_form').submit((e)=>{
+            e.preventDefault();
+            var message = $('#chat_input').val();
+            socket.emit('messages', message);
+        });
+
+        //connection form submit
+        $('#connection_form').submit((e)=>{
+            e.preventDefault();
+
+            this.port = $('#port_input').val();
+            this.username = $('#username_input').val();
+
+            console.log(this.port, this.username);
+
+            if(this.port == null || this.username == null){
+                alert('Please enter both PORT and Username');
+            }else {
+                connect();
+            }
+
+        })
+    </script>
+</body>
+</html>
+
+
