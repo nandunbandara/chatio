@@ -16,6 +16,12 @@ io.on('connection', (client)=>{
     client.on('join', (data)=>{
         console.log(data);
     })
+
+    client.on('messages', (data)=>{
+        console.log(data);
+        client.emit('broad', data);
+        client.broadcast.emit('broad', data);
+    })
 });
 
 server.listen(process.env.PORT || 4200);
