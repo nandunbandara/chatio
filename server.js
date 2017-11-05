@@ -12,4 +12,10 @@ app.get('/', (req, res, next)=>{
     res.sendFile(__dirname + '/public/index.html');
 });
 
-server.listen(4200);
+io.on('connection', (client)=>{
+    client.on('join', (data)=>{
+        console.log(data);
+    })
+});
+
+server.listen(process.env.PORT || 4200);
