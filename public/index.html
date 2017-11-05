@@ -18,42 +18,61 @@
     <form id="chat_form">
         <input id="chat_input" type="text">
         <input type="submit" value="Send">
-        <input type="button" on-click="disconnect()" value="Disconnect">
+        <input type="button" onclick="disconnect()" value="Disconnect">
     </form>
 
     <script>
 
-        //get session value for username
+        //get session value for username and port
         let username = sessionStorage.getItem('username');
-
-        //check if the user is logged in or not
-        if(username == null){
-            console.log('within if');
-            $('#chat_form').hide();
-            $('#connection_form').show();
-        }else{
-            console.log('within else');
-            $('#form').show();
-            $('#connection_form').hide();
-        }
+        let port = sessionStorage.getItem('port');
 
         let socket = null;
 
+        //load chat form upon connecting
+        let showChatForm = ()=>{
+            $('#chat_form').show();
+            $('#connection_form').hide();
+        };
+
+        //hide chat form upon disconnecting
+        let hideChatForm = ()=>{
+          $('#chat_form').hide();
+          $('#connection_form').show();
+        };
+
+        socket = io.connect('http://localhost:'.concat(port+"/"));
+
+
         //connect to the server
         let connect = (port, username)=>{
-            if(port == null || username == null){
-                alert('Please enter both PORT and Username');
-            }else{
-                socket = io.connect('http://localhost:'.concat(port));
-                sessionStorage.setItem('username', username);
-            }
+            sessionStorage.setItem('username', username);
+            sessionStorage.setItem('port', port);
+            socket = io.connect('http://localhost:'.concat(port+"/"));
+            showChatForm();
         };
 
         //disconnect from server
         let disconnect = ()=>{
             socket.close();
             sessionStorage.removeItem('username');
+            hideChatForm();
         };
+
+        //check if the user is logged in or not
+        let validateSession = ()=>{
+            if(username == null || port == null){
+                console.log('within if');
+                $('#chat_form').hide();
+                $('#connection_form').show();
+            }else{
+                $('#form').show();
+                $('#connection_form').hide();
+//                connect(port, username);
+            }
+        };
+
+        validateSession();
 
         if(socket != null){
             socket.on('connect', (data)=>{
@@ -76,7 +95,18 @@
         //connection form submit
         $('#connection_form').submit((e)=>{
             e.preventDefault();
-            connect($('#port_input').val(), $('#username').val());
+
+            this.port = $('#port_input').val();
+            this.username = $('#username_input').val();
+
+            console.log(this.port, this.username);
+
+            if(this.port == null || this.username == null){
+                alert('Please enter both PORT and Username');
+            }else {
+                connect();
+            }
+
         })
     </script>
 </body>
