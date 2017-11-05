@@ -26,7 +26,7 @@ let connect = (port, username)=>{
     sessionStorage.setItem('username', username);
     sessionStorage.setItem('port', port);
 
-    let server_url = 'http://localhost:'.concat('4200');
+    let server_url = 'http://localhost:'+port;
     socket = io.connect(server_url);
     showChatForm();
 };
